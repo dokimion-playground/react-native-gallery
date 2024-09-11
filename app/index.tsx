@@ -6,19 +6,35 @@ import {
   StyleSheet,
   ListRenderItem,
   Text,
-  View,
   Dimensions,
-  Alert,
   TouchableOpacity,
 } from "react-native";
 import React from "react";
-import useGallery, { ImageType } from "@/hooks/useGallery";
+import useGallery, { AlbumType, ImageType } from "@/hooks/useGallery";
+import MyDropdownPicker from "@/components/MyDropdownPicker";
+import TextInputModal from "@/components/TextInputModal";
 
 const width = Dimensions.get("screen").width;
 const columnSize = width / 3;
 
 export default function App() {
-  const { images, pickImage, deleteImage, imagesWithAddButton } = useGallery();
+  const {
+    selectedAlbum,
+    pickImage,
+    deleteImage,
+    imagesWithAddButton,
+    openModal,
+    modalVisible,
+    albumTitle,
+    setAlbumTitle,
+    addAlbum,
+    closeModal,
+    openDropdown,
+    closeDropdown,
+    isDropdownOpen,
+    albums,
+    selectAlbum,
+  } = useGallery();
 
   const onPressOpenGallery = () => {
     pickImage();
@@ -26,6 +42,33 @@ export default function App() {
 
   const onLongPress = (imageId: number) => {
     deleteImage(imageId);
+  };
+
+  const onPressAddAlbum = () => {
+    openModal();
+  };
+
+  const onSubmitEditing = () => {
+    if (!albumTitle) return;
+    addAlbum();
+    closeModal();
+  };
+
+  const onPressBackdrop = () => {
+    closeModal();
+  };
+
+  const onPressHeader = () => {
+    if (isDropdownOpen) {
+      closeDropdown();
+    } else {
+      openDropdown();
+    }
+  };
+
+  const onPressAlbum = (album: AlbumType) => {
+    selectAlbum(album);
+    closeDropdown();
   };
 
   const renderItem: ListRenderItem<ImageType> = ({
@@ -61,11 +104,27 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <MyDropdownPicker
+        albums={albums}
+        selectedAlbum={selectedAlbum}
+        onPressAddAlbum={onPressAddAlbum}
+        onPressHeader={onPressHeader}
+        isDropdownOpen={isDropdownOpen}
+        onPressAlbum={onPressAlbum}
+      />
+      <TextInputModal
+        modalVisible={modalVisible}
+        albumTitle={albumTitle}
+        setAlbumTitle={setAlbumTitle}
+        onSubmitEditing={onSubmitEditing}
+        onPressBackdrop={onPressBackdrop}
+      />
       <FlatList
         data={imagesWithAddButton}
         renderItem={renderItem}
         keyExtractor={(item, index) => index.toString()}
         numColumns={3}
+        style={{ zIndex: -1 }}
       />
     </SafeAreaView>
   );
