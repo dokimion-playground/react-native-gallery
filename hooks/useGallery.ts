@@ -25,11 +25,16 @@ export default function useGallery() {
   const [modalVisible, setModalVisible] = useState(false);
   const [albumTitle, setAlbumTitle] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<null | ImageType>(null);
 
   const openModal = () => setModalVisible(true);
   const closeModal = () => setModalVisible(false);
   const openDropdown = () => setIsDropdownOpen(true);
   const closeDropdown = () => setIsDropdownOpen(false);
+
+  const selectImage = (image: ImageType) => {
+    setSelectedImage(image);
+  };
 
   const addAlbum = () => {
     const lastId = albums.length === 0 ? 0 : albums[albums.length - 1].id;
@@ -41,10 +46,17 @@ export default function useGallery() {
 
     setAlbums([...albums, newAlbum]);
     setAlbumTitle("");
+    setSelectedAlbum(newAlbum);
   };
 
   const selectAlbum = (album: AlbumType) => {
     setSelectedAlbum(album);
+  };
+
+  const deleteAlbum = (albumId: number) => {
+    if (albumId === defaultAlbum.id) return;
+    setAlbums(albums.filter((album) => album.id !== albumId));
+    setSelectedAlbum(defaultAlbum);
   };
 
   const pickImage = async () => {
@@ -94,6 +106,30 @@ export default function useGallery() {
     },
   ];
 
+  const moveToPreviousImage = () => {
+    const selectedImageIndex = filteredImages.findIndex(
+      (image) => image.id === selectedImage?.id
+    );
+    const previousImageIdx =
+      selectedImageIndex === 0
+        ? filteredImages.length - 1 // 첫 번째 이미지면 마지막으로 이동
+        : selectedImageIndex - 1; // 아니면 이전 이미지로 이동
+    const previousImage = filteredImages[previousImageIdx];
+    setSelectedImage(previousImage);
+  };
+
+  const moveToNextImage = () => {
+    const selectedImageIndex = filteredImages.findIndex(
+      (image) => image.id === selectedImage?.id
+    );
+    const nextImageIdx =
+      selectedImageIndex === filteredImages.length - 1
+        ? 0 // 마지막 이미지면 첫 번째로 이동
+        : selectedImageIndex + 1; // 아니면 다음 이미지로 이동
+    const nextImage = filteredImages[nextImageIdx];
+    setSelectedImage(nextImage);
+  };
+
   return {
     selectedAlbum,
     pickImage,
@@ -110,5 +146,10 @@ export default function useGallery() {
     isDropdownOpen,
     albums,
     selectAlbum,
+    deleteAlbum,
+    selectImage,
+    selectedImage,
+    moveToPreviousImage,
+    moveToNextImage,
   };
 }

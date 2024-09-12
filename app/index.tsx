@@ -9,15 +9,18 @@ import {
   Dimensions,
   TouchableOpacity,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import useGallery, { AlbumType, ImageType } from "@/hooks/useGallery";
 import MyDropdownPicker from "@/components/MyDropdownPicker";
 import TextInputModal from "@/components/TextInputModal";
+import BigImageModal from "@/components/BigImageModal";
 
 const width = Dimensions.get("screen").width;
 const columnSize = width / 3;
 
 export default function App() {
+  const [isDetail, setIsDetail] = useState(false);
+
   const {
     selectedAlbum,
     pickImage,
@@ -34,6 +37,11 @@ export default function App() {
     isDropdownOpen,
     albums,
     selectAlbum,
+    deleteAlbum,
+    selectImage,
+    selectedImage,
+    moveToPreviousImage,
+    moveToNextImage,
   } = useGallery();
 
   const onPressOpenGallery = () => {
@@ -71,10 +79,20 @@ export default function App() {
     closeDropdown();
   };
 
-  const renderItem: ListRenderItem<ImageType> = ({
-    item: { id, uri },
-    index,
-  }) => {
+  const onPressImage = (image: ImageType) => {
+    selectImage(image);
+    setIsDetail(true);
+  };
+
+  const onPressLeftArrow = () => {
+    moveToPreviousImage();
+  };
+  const onPressRightArrow = () => {
+    moveToNextImage();
+  };
+
+  const renderItem: ListRenderItem<ImageType> = ({ item: image, index }) => {
+    const { id, uri } = image;
     if (id === -1) {
       return (
         <TouchableOpacity
@@ -93,7 +111,10 @@ export default function App() {
     }
 
     return (
-      <TouchableOpacity onLongPress={() => onLongPress(id)}>
+      <TouchableOpacity
+        onPress={() => onPressImage(image)}
+        onLongPress={() => onLongPress(id)}
+      >
         <Image
           source={{ uri }}
           style={{ width: columnSize, height: columnSize }}
@@ -111,6 +132,7 @@ export default function App() {
         onPressHeader={onPressHeader}
         isDropdownOpen={isDropdownOpen}
         onPressAlbum={onPressAlbum}
+        onLongPressAlbum={deleteAlbum}
       />
       <TextInputModal
         modalVisible={modalVisible}
@@ -118,6 +140,13 @@ export default function App() {
         setAlbumTitle={setAlbumTitle}
         onSubmitEditing={onSubmitEditing}
         onPressBackdrop={onPressBackdrop}
+      />
+      <BigImageModal
+        modalVisible={isDetail}
+        onPressBackdrop={() => setIsDetail(false)}
+        selectedImage={selectedImage}
+        onPressLeftArrow={onPressLeftArrow}
+        onPressRightArrow={onPressRightArrow}
       />
       <FlatList
         data={imagesWithAddButton}

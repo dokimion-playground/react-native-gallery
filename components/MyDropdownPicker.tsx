@@ -11,6 +11,7 @@ interface MydropdownPickerProps {
   isDropdownOpen: boolean;
   albums: AlbumType[];
   onPressAlbum: (album: AlbumType) => void;
+  onLongPressAlbum: (albumId: number) => void;
 }
 
 export default function MyDropdownPicker({
@@ -20,6 +21,7 @@ export default function MyDropdownPicker({
   isDropdownOpen,
   albums,
   onPressAlbum,
+  onLongPressAlbum,
 }: MydropdownPickerProps) {
   return (
     <View>
@@ -58,6 +60,7 @@ export default function MyDropdownPicker({
             <TouchableOpacity
               key={index}
               onPress={() => onPressAlbum(album)}
+              onLongPress={() => onLongPressAlbum(album.id)}
               style={{
                 paddingVertical: 12,
                 width: "100%",
