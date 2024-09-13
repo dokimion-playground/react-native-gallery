@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface ImageType {
   id: number;
@@ -31,6 +32,11 @@ export default function useGallery() {
   const closeModal = () => setModalVisible(false);
   const openDropdown = () => setIsDropdownOpen(true);
   const closeDropdown = () => setIsDropdownOpen(false);
+
+  const _setImages = (newImages: ImageType[]) => {
+    setImages(newImages);
+    AsyncStorage.setItem("images", JSON.stringify(newImages));
+  };
 
   const selectImage = (image: ImageType) => {
     setSelectedImage(image);
@@ -74,7 +80,7 @@ export default function useGallery() {
         uri: result.assets[0].uri,
         albumId: selectedAlbum.id,
       };
-      setImages([...images, newImage]);
+      _setImages([...images, newImage]);
     }
   };
 
@@ -92,7 +98,7 @@ export default function useGallery() {
         text: "네",
         onPress: () => {
           const newImages = images.filter((image) => image.id !== imageId);
-          setImages(newImages);
+          _setImages(newImages);
         },
       },
     ]);
@@ -129,6 +135,18 @@ export default function useGallery() {
     const nextImage = filteredImages[nextImageIdx];
     setSelectedImage(nextImage);
   };
+
+  const initValues = async () => {
+    const imageStorage = await AsyncStorage.getItem("images");
+    if (imageStorage !== null) {
+      const parsed = JSON.parse(imageStorage);
+      setImages(parsed);
+    }
+  };
+
+  useEffect(() => {
+    initValues();
+  }, []);
 
   return {
     selectedAlbum,

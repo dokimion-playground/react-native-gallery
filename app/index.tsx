@@ -8,15 +8,14 @@ import {
   Text,
   Dimensions,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import useGallery, { AlbumType, ImageType } from "@/hooks/useGallery";
 import MyDropdownPicker from "@/components/MyDropdownPicker";
 import TextInputModal from "@/components/TextInputModal";
 import BigImageModal from "@/components/BigImageModal";
-
-const width = Dimensions.get("screen").width;
-const columnSize = width / 3;
+import ImageList from "@/components/ImageList";
 
 export default function App() {
   const [isDetail, setIsDetail] = useState(false);
@@ -52,8 +51,23 @@ export default function App() {
     deleteImage(imageId);
   };
 
+  const onPressWatchAd = () => {};
+
   const onPressAddAlbum = () => {
-    openModal();
+    if (albums.length >= 2) {
+      Alert.alert("광고 시청", "", [
+        {
+          style: "cancel",
+          text: "닫기",
+        },
+        {
+          onPress: onPressWatchAd,
+          text: "광고시청",
+        },
+      ]);
+    } else {
+      openModal();
+    }
   };
 
   const onSubmitEditing = () => {
@@ -91,38 +105,6 @@ export default function App() {
     moveToNextImage();
   };
 
-  const renderItem: ListRenderItem<ImageType> = ({ item: image, index }) => {
-    const { id, uri } = image;
-    if (id === -1) {
-      return (
-        <TouchableOpacity
-          onPress={onPressOpenGallery}
-          style={{
-            width: columnSize,
-            height: columnSize,
-            backgroundColor: "orange",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ fontSize: 24, color: "white" }}>+</Text>
-        </TouchableOpacity>
-      );
-    }
-
-    return (
-      <TouchableOpacity
-        onPress={() => onPressImage(image)}
-        onLongPress={() => onLongPress(id)}
-      >
-        <Image
-          source={{ uri }}
-          style={{ width: columnSize, height: columnSize }}
-        />
-      </TouchableOpacity>
-    );
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <MyDropdownPicker
@@ -141,19 +123,18 @@ export default function App() {
         onSubmitEditing={onSubmitEditing}
         onPressBackdrop={onPressBackdrop}
       />
+      <ImageList
+        imagesWithAddButton={imagesWithAddButton}
+        onPressOpenGallery={onPressOpenGallery}
+        onPressImage={onPressImage}
+        onLongPress={onLongPress}
+      />
       <BigImageModal
         modalVisible={isDetail}
         onPressBackdrop={() => setIsDetail(false)}
         selectedImage={selectedImage}
         onPressLeftArrow={onPressLeftArrow}
         onPressRightArrow={onPressRightArrow}
-      />
-      <FlatList
-        data={imagesWithAddButton}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
-        numColumns={3}
-        style={{ zIndex: -1 }}
       />
     </SafeAreaView>
   );
